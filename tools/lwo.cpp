@@ -278,10 +278,18 @@ static uint32 CalcVMAPSize(Mesh * aMesh, uint32 aDimension)
 void Import_LWO(const char * aFileName, Mesh * aMesh)
 {
   // Open the input file
-  ifstream f(aFileName, ios::in | ios::binary);
+  ifstream f(aFileName, ios_base::in | ios_base::binary);
   if(f.fail())
     throw runtime_error("Could not open input file.");
+  Import_LWO(f, aMesh);
 
+  // Close the input file
+  f.close();
+}
+
+/// Import a mesh from an LWO stream.
+void Import_LWO(std::istream &f, Mesh * aMesh)
+{
   // File header
   if(ReadString(f, 4) != string("FORM"))
     throw runtime_error("Not a valid LWO file (missing FORM chunk).");
@@ -505,13 +513,24 @@ void Import_LWO(const char * aFileName, Mesh * aMesh)
     for(uint32 i = oldSize; i < pointCount; ++ i)
       aMesh->mTexCoords[i] = Vector2(0.0f, 0.0f);
   }
-
-  // Close the input file
-  f.close();
 }
 
 /// Export a mesh to an LWO file.
 void Export_LWO(const char * aFileName, Mesh * aMesh, Options &aOptions)
+{
+  // Open the output file
+  ofstream f(aFileName, ios_base::out | ios_base::binary);
+  if(f.fail())
+    throw runtime_error("Could not open output file.");
+
+  Export_LWO(f, aMesh, aOptions);
+
+  // Close the output file
+  f.close();
+}
+
+/// Export a mesh to an LWO stream.
+void Export_LWO(std::ostream &f, Mesh * aMesh, Options &aOptions)
 {
   // Check if we can support this mesh (too many vertices?)
   if(aMesh->mVertices.size() > 0x00ffffff)
@@ -544,11 +563,6 @@ void Export_LWO(const char * aFileName, Mesh * aMesh, Options &aOptions)
     fileSize += 8 + txuvSize;
   if(exportColors)
     fileSize += 8 + rgbaSize;
-
-  // Open the output file
-  ofstream f(aFileName, ios::out | ios::binary);
-  if(f.fail())
-    throw runtime_error("Could not open output file.");
 
   // File header
   WriteString(f, "FORM");
@@ -630,7 +644,4 @@ void Export_LWO(const char * aFileName, Mesh * aMesh, Options &aOptions)
     for(int j = 0; j < 3; ++ j)
       WriteVX(f, aMesh->mIndices[i * 3 + j]);
   }
-
-  // Close the output file
-  f.close();
 }

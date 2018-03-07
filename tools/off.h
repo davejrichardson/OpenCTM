@@ -28,8 +28,16 @@
 #ifndef __OFF_H_
 #define __OFF_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import a mesh from an OFF stream.
+void Import_OFF(std::istream &s, Mesh * aMesh);
+
+/// Export a mesh to an OFF stream.
+void Export_OFF(std::ostream &s, Mesh * aMesh, Options &aOptions);
 
 /// Import a mesh from an OFF file.
 void Import_OFF(const char * aFileName, Mesh * aMesh);

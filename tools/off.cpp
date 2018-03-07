@@ -45,7 +45,7 @@
 using namespace std;
 
 // Read the next line in a file (skip comments and empty lines)
-static void ReadNextLine(ifstream &aStream, string &aResult, string &aComment)
+static void ReadNextLine(istream &aStream, std::string &aResult, std::string &aComment)
 {
   while(true)
   {
@@ -93,13 +93,22 @@ static void ParseVeretex(const string aString, Vector3 * aCoord, Vector4 * aColo
 /// Import a mesh from an OFF file.
 void Import_OFF(const char * aFileName, Mesh * aMesh)
 {
-  // Clear the mesh
-  aMesh->Clear();
-
   // Open the input file
-  ifstream f(aFileName, ios::in);
+  ifstream f(aFileName, ios_base::in);
   if(f.fail())
     throw runtime_error("Could not open input file.");
+
+  Import_OFF(f, aMesh);
+
+  // Close the input file
+  f.close();
+}
+
+/// Import a mesh from an OFF stream.
+void Import_OFF(std::istream &f, Mesh * aMesh)
+{
+  // Clear the mesh
+  aMesh->Clear();
 
   // Some state variables that we need...
   unsigned int numVertices;
@@ -185,9 +194,6 @@ void Import_OFF(const char * aFileName, Mesh * aMesh)
     ++ j;
   }
 
-  // Close the input file
-  f.close();
-
   // Did we get a comment?
   if(comment.size() > 0)
     aMesh->mComment = comment;
@@ -197,10 +203,19 @@ void Import_OFF(const char * aFileName, Mesh * aMesh)
 void Export_OFF(const char * aFileName, Mesh * aMesh, Options &aOptions)
 {
   // Open the output file
-  ofstream f(aFileName, ios::out);
+  ofstream f(aFileName, ios_base::out);
   if(f.fail())
     throw runtime_error("Could not open output file.");
 
+  Export_OFF(f, aMesh, aOptions);
+
+  // Close the output file
+  f.close();
+}
+
+/// Export a mesh to an OFF stream.
+void Export_OFF(std::ostream &f, Mesh * aMesh, Options &aOptions)
+{
   // Mesh information
   unsigned int numVertices = (unsigned int) aMesh->mVertices.size();
   unsigned int numFaces = (unsigned int) aMesh->mIndices.size() / 3;
@@ -247,7 +262,4 @@ void Export_OFF(const char * aFileName, Mesh * aMesh, Options &aOptions)
                  aMesh->mIndices[i * 3 + 1] << " " <<
                  aMesh->mIndices[i * 3 + 2] << endl;
   }
-
-  // Close the output file
-  f.close();
 }

@@ -28,8 +28,16 @@
 #ifndef __LWO_H_
 #define __LWO_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import a mesh from an LWO stream.
+void Import_LWO(std::istream &s, Mesh * aMesh);
+
+/// Export a mesh to an LWO stream.
+void Export_LWO(std::ostream &s, Mesh * aMesh, Options &aOptions);
 
 /// Import a mesh from an LWO file.
 void Import_LWO(const char * aFileName, Mesh * aMesh);

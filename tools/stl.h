@@ -28,8 +28,16 @@
 #ifndef __STL_H_
 #define __STL_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import an STL file from a stream.
+void Import_STL(std::istream &s, Mesh * aMesh);
+
+/// Export an STL file to a stream.
+void Export_STL(std::ostream &s, Mesh * aMesh, Options &aOptions);
 
 /// Import an STL file from a file.
 void Import_STL(const char * aFileName, Mesh * aMesh);

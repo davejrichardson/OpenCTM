@@ -28,8 +28,16 @@
 #ifndef __3DS_H_
 #define __3DS_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import a 3DS file from a stream.
+void Import_3DS(std::istream &s, Mesh * aMesh);
+
+/// Export a 3DS file to a stream.
+void Export_3DS(std::ostream &s, Mesh * aMesh, Options &aOptions);
 
 /// Import a 3DS file from a file.
 void Import_3DS(const char * aFileName, Mesh * aMesh);

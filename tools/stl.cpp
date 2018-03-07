@@ -109,13 +109,22 @@ class SortVertex {
 /// Import an STL file from a file.
 void Import_STL(const char * aFileName, Mesh * aMesh)
 {
-  // Clear the mesh
-  aMesh->Clear();
-
   // Open the input file
-  ifstream f(aFileName, ios::in | ios::binary);
+  ifstream f(aFileName, ios_base::in | ios_base::binary);
   if(f.fail())
     throw runtime_error("Could not open input file.");
+
+  Import_STL(f, aMesh);
+
+  // Close the input file
+  f.close();
+}
+
+/// Import an STL file from a stream.
+void Import_STL(std::istream &f, Mesh * aMesh)
+{
+  // Clear the mesh
+  aMesh->Clear();
 
   // Get the file size
   f.seekg(0, ios::end);
@@ -181,19 +190,25 @@ void Import_STL(const char * aFileName, Mesh * aMesh)
     }
     aMesh->mVertices.resize(vertIdx + 1);
   }
-
-  // Close the input file
-  f.close();
 }
 
 /// Export an STL file to a file.
 void Export_STL(const char * aFileName, Mesh * aMesh, Options &aOptions)
 {
   // Open the output file
-  ofstream f(aFileName, ios::out | ios::binary);
+  ofstream f(aFileName, ios_base::out | ios_base::binary);
   if(f.fail())
     throw runtime_error("Could not open output file.");
 
+  Export_STL(f, aMesh, aOptions);
+
+  // Close the output file
+  f.close();
+}
+
+/// Export an STL file to a stream.
+void Export_STL(std::ostream &f, Mesh * aMesh, Options &aOptions)
+{
   // Write header (80-character comment + triangle count)
   char comment[80];
   for(uint32 i = 0; i < 80; ++ i)
@@ -232,7 +247,4 @@ void Export_STL(const char * aFileName, Mesh * aMesh, Options &aOptions)
     f.put(0);
     f.put(0);
   }
-
-  // Close the output file
-  f.close();
 }

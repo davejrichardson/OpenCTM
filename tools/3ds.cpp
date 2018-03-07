@@ -168,18 +168,27 @@ static void WriteVector3(ostream &aStream, Vector3 aValue)
 /// Import a 3DS file from a file.
 void Import_3DS(const char * aFileName, Mesh * aMesh)
 {
-  // Clear the mesh
-  aMesh->Clear();
-
   // Open the input file
-  ifstream f(aFileName, ios::in | ios::binary);
+  ifstream f(aFileName, ios_base::in | ios_base::binary);
   if(f.fail())
     throw runtime_error("Could not open input file.");
 
+  Import_3DS(f, aMesh);
+
+  // Close the input file
+  f.close();
+}
+
+/// Import a 3DS file from a stream.
+void Import_3DS(std::istream &f, Mesh * aMesh)
+{
+  // Clear the mesh
+  aMesh->Clear();
+
   // Get file size
-  f.seekg(0, ios::end);
+  f.seekg(0, ios_base::end);
   uint32 fileSize = f.tellg();
-  f.seekg(0, ios::beg);
+  f.seekg(0, ios_base::beg);
 
   // Check file size (rough initial check)
   if(fileSize < 6)
@@ -230,7 +239,7 @@ void Import_3DS(const char * aFileName, Mesh * aMesh)
         count = ReadInt16(f);
         if((!obj) || ((obj->mVertices.size() > 0) && (obj->mVertices.size() != count)))
         {
-          f.seekg(count * 12, ios::cur);
+          f.seekg(count * 12, ios_base::cur);
           break;
         }
         if(obj->mVertices.size() == 0)
@@ -244,7 +253,7 @@ void Import_3DS(const char * aFileName, Mesh * aMesh)
         count = ReadInt16(f);
         if((!obj) || ((obj->mUVCoords.size() > 0) && (obj->mUVCoords.size() != count)))
         {
-          f.seekg(count * 8, ios::cur);
+          f.seekg(count * 8, ios_base::cur);
           break;
         }
         if(obj->mUVCoords.size() == 0)
@@ -260,7 +269,7 @@ void Import_3DS(const char * aFileName, Mesh * aMesh)
         count = ReadInt16(f);
         if(!obj)
         {
-          f.seekg(count * 8, ios::cur);
+          f.seekg(count * 8, ios_base::cur);
           break;
         }
         if(obj->mIndices.size() == 0)
@@ -275,12 +284,9 @@ void Import_3DS(const char * aFileName, Mesh * aMesh)
         break;
         
       default:      // Unknown/ignored - skip past this one
-        f.seekg(chunkLen - 6, ios::cur);
+        f.seekg(chunkLen - 6, ios_base::cur);
     }
   }
-
-  // Close the input file
-  f.close();
 
   // Convert the loaded object list to the mesh structore (merge all geometries)
   aMesh->Clear();
@@ -314,6 +320,20 @@ void Import_3DS(const char * aFileName, Mesh * aMesh)
 /// Export a 3DS file to a file.
 void Export_3DS(const char * aFileName, Mesh * aMesh, Options &aOptions)
 {
+  // Open the output file
+  ofstream f(aFileName, ios_base::out | ios_base::binary);
+  if(f.fail())
+    throw runtime_error("Could not open output file.");
+
+  Export_3DS(f, aMesh, aOptions);
+
+  // Close the output file
+  f.close();
+}
+
+/// Export a 3DS file to a stream.
+void Export_3DS(std::ostream &f, Mesh * aMesh, Options &aOptions)
+{
   // First, check that the mesh fits in a 3DS file (at most 65535 triangles
   // and 65535 vertices are supported).
   if((aMesh->mIndices.size() > (3*65535)) || (aMesh->mVertices.size() > 65535))
@@ -323,8 +343,8 @@ void Export_3DS(const char * aFileName, Mesh * aMesh, Options &aOptions)
   bool exportTexCoords = aMesh->HasTexCoords() && !aOptions.mNoTexCoords;
 
   // Predefined names / strings
-  string objName("Object1");
-  string matName("Material0");
+  std::string objName("Object1");
+  std::string matName("Material0");
 
   // Get mesh properties
   uint32 triCount = aMesh->mIndices.size() / 3;
@@ -346,11 +366,6 @@ void Export_3DS(const char * aFileName, Mesh * aMesh, Options &aOptions)
 
   // Calculate the total file size
   uint32 fileSize = 38 + objName.size() + 1 + materialSize + triMeshSize;
-
-  // Open the output file
-  ofstream f(aFileName, ios::out | ios::binary);
-  if(f.fail())
-    throw runtime_error("Could not open output file.");
 
   // Write file header
   WriteInt16(f, CHUNK_MAIN);

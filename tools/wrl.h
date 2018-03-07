@@ -28,8 +28,16 @@
 #ifndef __WRL_H_
 #define __WRL_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import a mesh from a VRML 2.0 stream.
+void Import_WRL(std::istream &s, Mesh * aMesh);
+
+/// Export a mesh to a VRML 2.0 stream.
+void Export_WRL(std::ostream &s, Mesh * aMesh, Options &aOptions);
 
 /// Import a mesh from a VRML 2.0 file.
 void Import_WRL(const char * aFileName, Mesh * aMesh);

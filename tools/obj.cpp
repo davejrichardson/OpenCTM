@@ -144,13 +144,20 @@ static Vector3 ParseVector3(const string aString)
 /// Import a mesh from an OBJ file.
 void Import_OBJ(const char * aFileName, Mesh * aMesh)
 {
-  // Clear the mesh
-  aMesh->Clear();
-
   // Open the input file
-  ifstream inFile(aFileName, ios::in);
+  ifstream inFile(aFileName, ios_base::in);
   if(inFile.fail())
     throw runtime_error("Could not open input file.");
+
+  Import_OBJ(inFile, aMesh);
+
+  // Close the input file
+  inFile.close();
+}
+
+void Import_OBJ(std::istream &inFile, Mesh * aMesh) {
+  // Clear the mesh
+  aMesh->Clear();
 
   // Mesh description - parsed from the OBJ file
   list<Vector3> vertices;
@@ -258,19 +265,24 @@ void Import_OBJ(const char * aFileName, Mesh * aMesh)
       }
     }
   }
-
-  // Close the input file
-  inFile.close();
 }
 
 /// Export a mesh to an OBJ file.
 void Export_OBJ(const char * aFileName, Mesh * aMesh, Options &aOptions)
 {
   // Open the output file
-  ofstream f(aFileName, ios::out);
+  ofstream f(aFileName, ios_base::out);
   if(f.fail())
     throw runtime_error("Could not open output file.");
 
+  Export_OBJ(f, aMesh, aOptions);
+
+  // Close the output file
+  f.close();
+}
+
+/// Export a mesh to an OBJ stream.
+void Export_OBJ(std::ostream &f, Mesh * aMesh, Options &aOptions) {
   // What should we export?
   bool exportTexCoords = aMesh->HasTexCoords() && !aOptions.mNoTexCoords;
   bool exportNormals = aMesh->HasNormals() && !aOptions.mNoNormals;
@@ -341,7 +353,4 @@ void Export_OBJ(const char * aFileName, Mesh * aMesh, Options &aOptions)
       f << idx;
     f << endl;
   }
-
-  // Close the output file
-  f.close();
 }

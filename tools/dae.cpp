@@ -212,8 +212,38 @@ void InsertVertNormalTexcoord(vector<Vector3>& vertVector,vector<Vector3>& norma
   }
 }
 
+/// Forward reference so that the file and stream loaders can use this function.
+void Import_DAE(TiXmlDocument &doc, Mesh * aMesh);
+
+/// Import a DAE file from a stream.
+void Import_DAE(std::istream &f, Mesh * aMesh)
+{
+  // Start by ensuring that we use proper locale settings for the file format
+  setlocale(LC_NUMERIC, "C");
+
+  const std::string data((std::istreambuf_iterator<char>(f)),
+                         std::istreambuf_iterator<char>());
+
+  // Load the XML document
+  TiXmlDocument doc("model");
+  if (doc.Parse(data.data()))
+    Import_DAE(doc, aMesh);
+}
+
 /// Import a DAE file from a file.
 void Import_DAE(const char * aFileName, Mesh * aMesh)
+{
+  // Start by ensuring that we use proper locale settings for the file format
+  setlocale(LC_NUMERIC, "C");
+
+  // Load the XML document
+  TiXmlDocument doc(aFileName);
+  if (doc.LoadFile())
+    Import_DAE(doc, aMesh);
+}
+
+/// Import a DAE file from a file.
+void Import_DAE(TiXmlDocument &doc, Mesh * aMesh)
 {
   // Start by ensuring that we use proper locale settings for the file format
   setlocale(LC_NUMERIC, "C");
@@ -221,8 +251,6 @@ void Import_DAE(const char * aFileName, Mesh * aMesh)
   // Clear the mesh
   aMesh->Clear();
 
-  // Load the XML document
-  TiXmlDocument doc(aFileName);
   if (doc.LoadFile())
   {
     

@@ -193,9 +193,8 @@ class VRMLReader {
     }
 
     /// Input file stream
-    ifstream * mStream;
+    istream * mStream;
 };
-
 
 /// Import a mesh from a VRML 2.0 file.
 void Import_WRL(const char * aFileName, Mesh * aMesh)
@@ -203,13 +202,22 @@ void Import_WRL(const char * aFileName, Mesh * aMesh)
   // FIXME: The import functionality has not yet been fully implemented
   throw runtime_error("VRML import is not yet supported.");
 
-  // Clear the mesh
-  aMesh->Clear();
-
   // Open the input file
-  ifstream f(aFileName, ios::in);
+  ifstream f(aFileName, ios_base::in);
   if(f.fail())
     throw runtime_error("Could not open input file.");
+
+  Import_WRL(f, aMesh);
+
+  // Close the input file
+  f.close();
+}
+
+/// Import a mesh from a VRML 2.0 stream.
+void Import_WRL(std::istream &f, Mesh * aMesh)
+{
+  // Clear the mesh
+  aMesh->Clear();
 
   // Initialize the reader object
   VRMLReader reader;
@@ -217,19 +225,25 @@ void Import_WRL(const char * aFileName, Mesh * aMesh)
 
   // Read the entire file...
   reader.ReadMesh(aMesh);
-
-  // Close the input file
-  f.close();
 }
 
 /// Export a mesh to a VRML 2.0 file.
 void Export_WRL(const char * aFileName, Mesh * aMesh, Options &aOptions)
 {
   // Open the output file
-  ofstream f(aFileName, ios::out);
+  ofstream f(aFileName, ios_base::out);
   if(f.fail())
     throw runtime_error("Could not open output file.");
 
+  Export_WRL(f, aMesh, aOptions);
+
+  // Close the output file
+  f.close();
+}
+
+/// Export a mesh to a VRML 2.0 file.
+void Export_WRL(std::ostream &f, Mesh * aMesh, Options &aOptions)
+{
   // Set floating point precision
   f << setprecision(8);
 
@@ -299,7 +313,4 @@ void Export_WRL(const char * aFileName, Mesh * aMesh, Options &aOptions)
   f << "\t\t}" << endl;
   f << "\t]" << endl;
   f << "}" << endl;
-
-  // Close the output file
-  f.close();
 }

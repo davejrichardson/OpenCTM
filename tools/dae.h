@@ -28,8 +28,13 @@
 #ifndef __DAE_H_
 #define __DAE_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import a DAE file from a stream.
+void Import_DAE(std::istream &s, Mesh * aMesh);
 
 /// Import a DAE file from a file.
 void Import_DAE(const char * aFileName, Mesh * aMesh);

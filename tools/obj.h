@@ -28,8 +28,16 @@
 #ifndef __OBJ_H_
 #define __OBJ_H_
 
+#include <iostream>
+
 #include "mesh.h"
 #include "convoptions.h"
+
+/// Import a mesh from a OBJ stream.
+void Import_OBJ(std::istream &s, Mesh * aMesh);
+
+/// Export a mesh to an OBJ stream.
+void Export_OBJ(std::ostream &s, Mesh * aMesh, Options &aOptions);
 
 /// Import a mesh from an OBJ file.
 void Import_OBJ(const char * aFileName, Mesh * aMesh);
