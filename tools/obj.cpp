@@ -25,9 +25,11 @@
 //     distribution.
 //-----------------------------------------------------------------------------
 
+#include <algorithm>
 #include <stdexcept>
 #include <fstream>
 #include <iomanip>
+#include <set>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -120,6 +122,18 @@ class OBJFace {
     list<OBJFaceNode> mNodes;
 };
 
+struct OBJVertex {
+  OBJVertex() : v(0), vt(0), vn(0), index(-1) {}
+  OBJVertex(int v_in, int vt_in, int vn_in, int index_in)
+      : v(v_in), vt(vt_in), vn(vn_in), index(index_in) {}
+  bool operator<(const OBJVertex& other) const
+  {
+    return std::lexicographical_compare(&v, &index, &other.v, &other.index);
+  }
+  int v, vt, vn;
+  int index;
+};
+
 // Parse a 2 x float string as a Vector2
 static Vector2 ParseVector2(const string aString)
 {
@@ -198,11 +212,11 @@ void Import_OBJ(std::istream &inFile, Mesh * aMesh) {
   vector<Vector3> normalsArray(normals.begin(), normals.end());
 
   // Prepare vertices
-  aMesh->mVertices.resize(verticesArray.size());
+  aMesh->mVertices.reserve(verticesArray.size());
   if(texCoordsArray.size() > 0)
-    aMesh->mTexCoords.resize(verticesArray.size());
+    aMesh->mTexCoords.reserve(verticesArray.size());
   if(normalsArray.size() > 0)
-    aMesh->mNormals.resize(verticesArray.size());
+    aMesh->mNormals.reserve(verticesArray.size());
 
   // Prepare indices
   int triCount = 0;
@@ -216,52 +230,53 @@ void Import_OBJ(std::istream &inFile, Mesh * aMesh) {
 
   // Iterate faces and extract vertex data
   unsigned int idx = 0;
+  // Store vertices uniquely.
+  std::set<OBJVertex> vertexMap;
   for(list<OBJFace>::iterator i = faces.begin(); i != faces.end(); ++ i)
   {
     OBJFace &f = (*i);
-    int nodes[3][3];
     int nodeCount = 0;
+    OBJVertex nodes[3];
     for(list<OBJFaceNode>::iterator n = f.mNodes.begin(); n != f.mNodes.end(); ++ n)
     {
       // Collect polygon nodes for this face, turning it into triangles
-      if(nodeCount < 3)
+      OBJVertex v((*n).v, (*n).vt, (*n).vn, vertexMap.size());
+      std::set<OBJVertex>::const_iterator it = vertexMap.find(v);
+      if(it == vertexMap.end())
       {
-        nodes[nodeCount][0] = (*n).v;
-        nodes[nodeCount][1] = (*n).vt;
-        nodes[nodeCount][2] = (*n).vn;
+        // Create a new vertex
+        vertexMap.insert(v);
+
+        // Add the vertex data
+        aMesh->mVertices.push_back(verticesArray[v.v]);
+        if(texCoordsArray.size() > 0)
+          aMesh->mTexCoords.push_back(texCoordsArray[v.vt]);
+        if(normalsArray.size() > 0)
+          aMesh->mNormals.push_back(normalsArray[v.vn]);
       }
       else
       {
-        nodes[1][0] = nodes[2][0];
-        nodes[1][1] = nodes[2][1];
-        nodes[1][2] = nodes[2][2];
-        nodes[2][0] = (*n).v;
-        nodes[2][1] = (*n).vt;
-        nodes[2][2] = (*n).vn;
+        v = *it;
+      }
+
+      if(nodeCount < 3)
+      {
+        nodes[nodeCount] = v;
+      }
+      else
+      {
+        // Create a new triangle by updating one vertex
+        nodes[1] = nodes[2];
+        nodes[2] = v;
       }
       ++ nodeCount;
 
-      // Emit one triangle?
+      // Emit one triangle
       if(nodeCount >= 3)
       {
-        aMesh->mIndices[idx ++] = nodes[0][0];
-        aMesh->mIndices[idx ++] = nodes[1][0];
-        aMesh->mIndices[idx ++] = nodes[2][0];
-        aMesh->mVertices[nodes[0][0]] = verticesArray[nodes[0][0]];
-        aMesh->mVertices[nodes[1][0]] = verticesArray[nodes[1][0]];
-        aMesh->mVertices[nodes[2][0]] = verticesArray[nodes[2][0]];
-        if(texCoordsArray.size() > 0)
-        {
-          aMesh->mTexCoords[nodes[0][0]] = texCoordsArray[nodes[0][1]];
-          aMesh->mTexCoords[nodes[1][0]] = texCoordsArray[nodes[1][1]];
-          aMesh->mTexCoords[nodes[2][0]] = texCoordsArray[nodes[2][1]];
-        }
-        if(normalsArray.size() > 0)
-        {
-          aMesh->mNormals[nodes[0][0]] = normalsArray[nodes[0][2]];
-          aMesh->mNormals[nodes[1][0]] = normalsArray[nodes[1][2]];
-          aMesh->mNormals[nodes[2][0]] = normalsArray[nodes[2][2]];
-        }
+        aMesh->mIndices[idx ++] = nodes[0].index;
+        aMesh->mIndices[idx ++] = nodes[1].index;
+        aMesh->mIndices[idx ++] = nodes[2].index;
       }
     }
   }
