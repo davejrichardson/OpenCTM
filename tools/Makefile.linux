@@ -29,7 +29,7 @@ OPENCTMDIR = ../lib
 GLEWDIR = glew
 JPEGDIR = jpeg
 RPLYDIR = rply
-TINYXMLDIR = tinyxml
+TINYXMLDIR = tinyxml2
 ZLIBDIR = zlib
 PNGLITEDIR = pnglite
 
@@ -46,17 +46,17 @@ all: ctmconv ctmviewer ctmbench
 clean:
 	rm -f ctmconv ctmviewer ctmbench $(CTMCONVOBJS) $(CTMVIEWEROBJS) $(CTMBENCHOBJS) bin2c phong_frag.h phong_vert.h
 	cd $(JPEGDIR) && $(MAKE) -f makefile.linux clean
-	cd $(TINYXMLDIR) && $(MAKE) -f Makefile.linux clean
+	cd $(TINYXMLDIR) && $(MAKE) -f Makefile clean
 	cd $(ZLIBDIR) && $(MAKE) -f Makefile.linux clean
 
 libopenctm.so: $(OPENCTMDIR)/libopenctm.so
 	cp $< $@
 
-ctmconv: $(CTMCONVOBJS) $(TINYXMLDIR)/libtinyxml.a libopenctm.so
-	$(CPP) -s -o $@ -L$(OPENCTMDIR) -L$(TINYXMLDIR) $(CTMCONVOBJS) -Wl,-rpath,. -lopenctm -ltinyxml
+ctmconv: $(CTMCONVOBJS) $(TINYXMLDIR)/libtinyxml2.a libopenctm.so
+	$(CPP) -s -o $@ -L$(OPENCTMDIR) -L$(TINYXMLDIR) $(CTMCONVOBJS) -Wl,-rpath,. -lopenctm -ltinyxml2
 
-ctmviewer: $(CTMVIEWEROBJS) $(JPEGDIR)/libjpeg.a $(TINYXMLDIR)/libtinyxml.a $(ZLIBDIR)/libz.a libopenctm.so
-	$(CPP) -s -o $@ -L$(OPENCTMDIR) -L$(TINYXMLDIR) -L$(JPEGDIR) -L$(ZLIBDIR) $(CTMVIEWEROBJS) -Wl,-rpath,. -lopenctm -ltinyxml -ljpeg -lz -lglut -lGL -lGLU `pkg-config --libs gtk+-2.0`
+ctmviewer: $(CTMVIEWEROBJS) $(JPEGDIR)/libjpeg.a $(TINYXMLDIR)/libtinyxml2.a $(ZLIBDIR)/libz.a libopenctm.so
+	$(CPP) -s -o $@ -L$(OPENCTMDIR) -L$(TINYXMLDIR) -L$(JPEGDIR) -L$(ZLIBDIR) $(CTMVIEWEROBJS) -Wl,-rpath,. -lopenctm -ltinyxml2 -ljpeg -lz -lglut -lGL -lGLU `pkg-config --libs gtk+-2.0`
 
 ctmbench: $(CTMBENCHOBJS) libopenctm.so
 	$(CPP) -s -o $@ -L$(OPENCTMDIR) $(CTMBENCHOBJS) -Wl,-rpath,. -lopenctm
@@ -108,5 +108,5 @@ rply.o: $(RPLYDIR)/rply.c
 pnglite.o: $(PNGLITEDIR)/pnglite.c
 	gcc -c -O2 -W -I$(PNGLITEDIR) -o $@ $<
 
-$(TINYXMLDIR)/libtinyxml.a:
-	cd $(TINYXMLDIR) && $(MAKE) -f Makefile.linux
+$(TINYXMLDIR)/libtinyxml2.a:
+	cd $(TINYXMLDIR) && $(MAKE) -f Makefile

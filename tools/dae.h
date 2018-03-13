@@ -36,6 +36,9 @@
 /// Import a DAE file from a stream.
 void Import_DAE(std::istream &s, Mesh * aMesh);
 
+/// Export a DAE file to a stream.
+void Export_DAE(std::ostream &s, Mesh * aMesh, Options &aOptions);
+
 /// Import a DAE file from a file.
 void Import_DAE(const char * aFileName, Mesh * aMesh);
 
