@@ -148,26 +148,26 @@ class Mesh {
     void CalculateNormals(NormalCalcAlgo aAlgo = ncaAuto);
 
     /// Calculate the bounding box for the mesh
-    void BoundingBox(Vector3 &aMin, Vector3 &aMax);
+    void BoundingBox(Vector3 &aMin, Vector3 &aMax) const;
 
     /// Set to true if the mesh contains the original normals from the imported
     /// file. This flag is set to false by the CalculateNormals() method.
     bool mOriginalNormals;
 
     /// Check if the mesh has normals
-    bool HasNormals()
+    bool HasNormals() const
     {
       return (mNormals.size() > 0) && (mNormals.size() == mVertices.size());
     }
 
     /// Check if the mesh has colors
-    bool HasColors()
+    bool HasColors() const
     {
       return (mColors.size() > 0) && (mColors.size() == mVertices.size());
     }
 
     /// Check if the mesh has texture coordinates
-    bool HasTexCoords()
+    bool HasTexCoords() const
     {
       return (mTexCoords.size() > 0) && (mTexCoords.size() == mVertices.size());
     }

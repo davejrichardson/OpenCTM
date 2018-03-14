@@ -190,7 +190,7 @@ void Mesh::CalculateNormals(NormalCalcAlgo aAlgo)
 }
 
 /// Calculate the bounding box for the mesh
-void Mesh::BoundingBox(Vector3 &aMin, Vector3 &aMax)
+void Mesh::BoundingBox(Vector3 &aMin, Vector3 &aMax) const
 {
   if(mVertices.size() < 1)
     aMin = aMax = Vector3(0.0f, 0.0f, 0.0f);
